@@ -37,9 +37,9 @@
     >> pyfan.destroy(status_id)
     >> pyfan.post(status, photo_file)
 
-count为条数，默认为10，最大不超过60
-page为页号，默认为0
-user_id为用户ID，显示在用户名后面的括号中
-status_id为消息ID，显示在时间后面的括号中
-status为消息内容
-photo_file为图片文件名，默认为空
+* count为条数，默认为10，最大不超过60
+* page为页号，默认为0
+* user_id为用户ID，显示在用户名后面的括号中
+* status_id为消息ID，显示在时间后面的括号中
+* status为消息内容
+* photo_file为图片文件名，默认为空
