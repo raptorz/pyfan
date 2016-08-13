@@ -46,11 +46,11 @@
 
 ## 命令行
 
-    bash
-    >> python cli.py help            # 获得使用帮助
-    >> python cli.py                 # 获得timeline最新10条(默认值)信息
-    >> python cli.py mention 30      # 显示最新30条“提到我的”消息
-    >> python cli.py timeline 30 2   # 按每页30条计算，显示第二页timeline消息
-    >> python cli.py timeline page=2 # 按每页10条(默认值)计算，显示第二页timeline消息
-    >> python cli.py this is a demo  # 发送内容为“this is a demo”的消息
-    >> python cli.py "text=this is a demo" "photo=../photo/test.png"  # 发送内容为“this is a demo”的消息，并附带指定图片。注意图片后缀必需为png或jpg或gif。
+    python cli.py help            # 获得使用帮助
+    python cli.py                 # 获得timeline最新10条(默认值)信息
+    python cli.py mention 30      # 显示最新30条“提到我的”消息
+    python cli.py timeline 30 2   # 按每页30条计算，显示第二页timeline消息
+    python cli.py timeline page=2 # 按每页10条(默认值)计算，显示第二页timeline消息
+    python cli.py this is a demo  # 发送内容为“this is a demo”的消息
+    python cli.py "text=this is a demo" "photo=../photo/test.png"  
+            # 发送内容为“this is a demo”的消息，并附带指定图片。注意图片后缀必需为png或jpg或gif。
