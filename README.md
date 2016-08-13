@@ -43,3 +43,11 @@
 * status_id为消息ID，显示在时间后面的括号中
 * status为消息内容
 * photo为图片文件名，默认为空
+
+## 命令行使用
+
+（感谢令狐增加此功能）
+
+详见
+
+    python cli.py help
