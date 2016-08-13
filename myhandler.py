@@ -56,7 +56,7 @@ def handle_mention(commands, cmd, argv):
     count = int(arg_dict['count'])
     page = int(arg_dict['page'])
 
-    pyfan.mention(count, page)
+    pyfan.mentions(count, page)
 
 def handle_usertimeline(commands, cmd, argv):
     arg_dict = _parse_argv(commands, cmd, argv)
@@ -68,7 +68,7 @@ def handle_usertimeline(commands, cmd, argv):
     count = int(arg_dict['count'])
     page = int(arg_dict['page'])
 
-    pyfan.mention(user_id, count, page)
+    pyfan.usertimeline(user_id, count, page)
 
 def handle_post(commands, cmd, argv):
     arg_dict = {}
@@ -93,23 +93,23 @@ def handle_post(commands, cmd, argv):
     
 
 def handle_help(commands, cmd, argv):
-    print('支持的命令: ')
+    print(u'支持的命令: ')
     for command, desc in commands.items():
-        print("\n    %s: %s" % (command, desc[0]))
-        print("    本命令支持 %d 个参数" % len(desc[1]))
+        print(u"\n    %s: %s" % (command, desc[0]))
+        print(u"    本命令支持 %d 个参数" % len(desc[1]))
         if len(desc[1]) > 0:
-            print("    参数详述：")
+            print(u"    参数详述：")
         for arg_name, must_be, arg_desc in desc[1]:
-            print("        %s%s: %s" % (arg_name, "(必需)" if must_be else "", arg_desc))
+            print(u"        %s%s: %s" % (arg_name, u"(必需)" if must_be else u"", arg_desc))
 
-    print('\n注意：如果完全不带参数，则以默认数量显示timeline。如果参数中不包含有效命令，则默认为发送消息。')
-    print('\n参数有两种写法：一种是顺序写法，只需要写值即可。顺序必须保持与说明中一致。')
-    print('另一种是 key=value 的写法，key的名字就是帮助中提到的名字。等号前后不能有空格。如果value包含空格，请写成带双引号的形式："key=value with space"，这种写法顺序不重要，而且可以省略非必需的参数。但要必需的参数必须存在，否则会报错')
-    print('\n顺序写法和key=value写法不可混用')
-    print('\n注意：如果要发送句首为命令的内容。可以在前面明确指定post命令，或将内容用引号（"）括起来')
-    print('\n用法示例：')
-    print('     python %s mention 30 //显示最新30条“提到我的”消息' % os.path.basename(sys.argv[0]))
-    print('     python %s timeline 30 2 //按每页30条计算，显示第二页timeline消息' % os.path.basename(sys.argv[0]))
-    print('     python %s timeline page=2 //按每页10条(默认值)计算，显示第二页timeline消息' % os.path.basename(sys.argv[0]))
-    print('     python %s this is a demo //发送内容为“this is a demo”的消息' % os.path.basename(sys.argv[0]))
-    print('     python %s "text=this is a demo" photo=../photo/test.png //发送内容为“this is a demo”的消息，并附带指定图片。注意图片后缀必需为png或jpg或gif' % os.path.basename(sys.argv[0]))
+    print(u'\n注意：如果完全不带参数，则以默认数量显示timeline。如果参数中不包含有效命令，则默认为发送消息。')
+    print(u'\n参数有两种写法：一种是顺序写法，只需要写值即可。顺序必须保持与说明中一致。')
+    print(u'另一种是 key=value 的写法，key的名字就是帮助中提到的名字。等号前后不能有空格。如果value包含空格，请写成带双引号的形式："key=value with space"，这种写法顺序不重要，而且可以省略非必需的参数。但要必需的参数必须存在，否则会报错')
+    print(u'\n顺序写法和key=value写法不可混用')
+    print(u'\n注意：如果要发送句首为命令的内容。可以在前面明确指定post命令，或将内容用引号（"）括起来')
+    print(u'\n用法示例：')
+    print(u'     python %s mention 30 //显示最新30条“提到我的”消息' % os.path.basename(sys.argv[0]))
+    print(u'     python %s timeline 30 2 //按每页30条计算，显示第二页timeline消息' % os.path.basename(sys.argv[0]))
+    print(u'     python %s timeline page=2 //按每页10条(默认值)计算，显示第二页timeline消息' % os.path.basename(sys.argv[0]))
+    print(u'     python %s this is a demo //发送内容为“this is a demo”的消息' % os.path.basename(sys.argv[0]))
+    print(u'     python %s "text=this is a demo" photo=../photo/test.png //发送内容为“this is a demo”的消息，并附带指定图片。注意图片后缀必需为png或jpg或gif' % os.path.basename(sys.argv[0]))
