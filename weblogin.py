@@ -52,7 +52,7 @@ def get_():
     api = Fanfou(config['CLIENT_KEY'], client_secret=config['CLIENT_SECRET'], callback_uri=callback_uri)
     request_token = api.auth.fetch_request_token("http://fanfou.com/oauth/request_token")
     response.set_cookie("request_token", json.dumps(request_token))
-    authorization_url = api.auth.authorization_url("http://fanfou.com/oauth/authorize")
+    authorization_url = api.auth.authorization_url("http://fanfou.com/oauth/authorize", oauth_callback=callback_uri) 
     redirect(authorization_url)
 
 
