@@ -36,6 +36,8 @@
     >> pyfan.showstatus(status_id)
     >> pyfan.destroy(status_id)
     >> pyfan.post(status, photo)
+    >> pyfan.reply(status, index)
+    >> pyfan.repost(status, index)
 
 * count为条数，默认为10，最大不超过60
 * page为页号，默认为0
@@ -43,6 +45,7 @@
 * status_id为消息ID，显示在时间后面的括号中
 * status为消息内容
 * photo为图片文件名，默认为空
+* index为消息编号，显示在最前在的方括号中，注意：只能引用最近一次timeline/mentions/usertimeliney调用结果。
 
 ## 命令行使用
 
