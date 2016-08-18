@@ -87,7 +87,9 @@ def usertimeline(user_id, count=10, page=0):
 def showstatus(status_id):
     api = get_api()
     data = api.statuses.GET_show(id=status_id, mode="lite")
-    print_status(data)
+    del tldata[:]
+    tldata.append(data)
+    print_status(0, data)
 
 
 def destroy(status_id):
@@ -97,10 +99,11 @@ def destroy(status_id):
 
 def post(status, photo="", in_reply_to_status_id=None, repost_status_id=None, in_reply_to_user_id=None):
     api = get_api()
-    if not exists(photo):
-        print("Photo file {} not found!".format(photo))
     if photo:
-        api.photos.POST_upload(status=status, photo=open(photo, "rb"), mode="lite")
+        if not exists(photo):
+            print("Photo file {} not found!".format(photo))
+        else:
+            api.photos.POST_upload(status=status, photo=open(photo, "rb"), mode="lite")
     else:
         api.statuses.POST_update(status=status,
                 in_reply_to_status_id=in_reply_to_status_id,
