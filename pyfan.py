@@ -123,26 +123,25 @@ def post(status, photo="", in_reply_to_status_id=None, repost_status_id=None, in
                 mode="lite")
 
 
-def reply(status, index):
+def reply(status, index, all=False):
     global tldata
     in_reply_to = tldata[index]
     api = get_api()
-    api.statuses.POST_update(status=u"@{} {}".format(in_reply_to['user']['screen_name'], status),
+    if all:
+        self_user = api.account.GET_verify_credentials(mode='lite')['screen_name']
+        users = pat_reply.findall(u"".join([in_reply_to['text'], " "]))
+        reply_user = in_reply_to['user']['screen_name']
+        users = list(set(users) - set([reply_user, self_user]))
+        users.insert(0, reply_user)
+    else:
+        users = [in_reply_to['user']['screen_name']]
+    api.statuses.POST_update(status=u"@{} {}".format(" @".join(users), status),
                              in_reply_to_status_id=in_reply_to['id'],
                              in_reply_to_user_id=in_reply_to['user']['id'])
 
 
 def replyall(status, index):
-    global tldata
-    in_reply_to = tldata[index]
-    users = pat_reply.findall(u"".join([in_reply_to['text'], " "]))
-    reply_user = in_reply_to['user']['screen_name']
-    users = list(set(users) - set([reply_user]))
-    users.insert(0, reply_user)
-    api = get_api()
-    api.statuses.POST_update(status=u"@{} {}".format(" @".join(users), status),
-                             in_reply_to_status_id=in_reply_to['id'],
-                             in_reply_to_user_id=in_reply_to['user']['id'])
+    reply(status, index, all=True)
 
 
 def repost(status, index):
