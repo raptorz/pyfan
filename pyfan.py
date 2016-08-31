@@ -135,8 +135,8 @@ def reply(status, index):
 def replyall(status, index):
     global tldata
     in_reply_to = tldata[index]
-    users = pat_reply.findall(u"".join([in_reply_to['text'], " ")))
-    reply_user = in_reply_to['user']'screen_name']
+    users = pat_reply.findall(u"".join([in_reply_to['text'], " "]))
+    reply_user = in_reply_to['user']['screen_name']
     users = list(set(users) - set([reply_user]))
     users.insert(0, reply_user)
     api = get_api()
