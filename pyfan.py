@@ -13,14 +13,16 @@
     >> pyfan.timeline(10)
     >> pyfan.mentions(10)
     >> pyfan.usertimeline(user_id, 10)
-    >> pyfan.showstatus("smmM8CbcJ4E")
-    >> pyfan.destroy("tp6O2eYs2SI")
+    >> pyfan.showstatus("smmM8CbcJ4E") or index
+    >> pyfan.destroy("tp6O2eYs2SI") or index
     >> pyfan.post(u"status", "photo.jpg")
     >> pyfan.repost(u"status", index)
     >> pyfan.reply(u"status", index)
+    >> pyfan.replyall(u"status", index)
 """
 from os.path import exists
 from datetime import datetime
+import re
 
 from restclient.fanfou import Fanfou
 
@@ -33,6 +35,9 @@ logger = logging.getLogger(__name__)
 
 
 tldata = []
+
+
+pat_reply = re.compile(u"@([^\s]+)\s")
 
 
 def get_api():
@@ -85,6 +90,9 @@ def usertimeline(user_id, count=10, page=0):
 
 
 def showstatus(status_id):
+    if isinstance(status_id, int):
+        global tldata
+        status_id = tldata[status_id]['id']
     api = get_api()
     data = api.statuses.GET_show(id=status_id, mode="lite")
     del tldata[:]
@@ -93,6 +101,9 @@ def showstatus(status_id):
 
 
 def destroy(status_id):
+    if isinstance(status_id, int):
+        global tldata
+        status_id = tldata[status_id]['id']
     api = get_api()
     api.statuses.POST_destroy(id=status_id, mode="lite")
 
@@ -117,6 +128,19 @@ def reply(status, index):
     in_reply_to = tldata[index]
     api = get_api()
     api.statuses.POST_update(status=u"@{} {}".format(in_reply_to['user']['screen_name'], status),
+                             in_reply_to_status_id=in_reply_to['id'],
+                             in_reply_to_user_id=in_reply_to['user']['id'])
+
+
+def replyall(status, index):
+    global tldata
+    in_reply_to = tldata[index]
+    users = pat_reply.findall(u"".join([in_reply_to['text'], " ")))
+    reply_user = in_reply_to['user']'screen_name']
+    users = list(set(users) - set([reply_user]))
+    users.insert(0, reply_user)
+    api = get_api()
+    api.statuses.POST_update(status=u"@{} {}".format(" @".join(users), status),
                              in_reply_to_status_id=in_reply_to['id'],
                              in_reply_to_user_id=in_reply_to['user']['id'])
 
