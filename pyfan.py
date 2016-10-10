@@ -10,15 +10,16 @@
 
     python
     >> import pyfan
-    >> pyfan.timeline(10)
-    >> pyfan.mentions(10)
-    >> pyfan.usertimeline(user_id, 10)
-    >> pyfan.showstatus("smmM8CbcJ4E") or index
-    >> pyfan.destroy("tp6O2eYs2SI") or index
+    >> pyfan.timeline(8)
+    >> pyfan.mentions(8)
+    >> pyfan.usertimeline(user_id, 8)
+    >> pyfan.showstatus(status_id or index)
+    >> pyfan.destroy(status_id or index)
     >> pyfan.post(u"status", "photo.jpg")
     >> pyfan.repost(u"status", index)
     >> pyfan.reply(u"status", index)
     >> pyfan.replyall(u"status", index)
+    >> pyfan.showcontext(index)
 """
 from os.path import exists
 from datetime import datetime
@@ -59,7 +60,7 @@ def print_status(i, status):
     print(u"[%(index)s]%(created)s(%(id)s)%(screen_name)s(%(user_id)s): %(text)s %(photo)s" % row)
 
 
-def timeline(count=10, page=0):
+def timeline(count=8, page=0):
     api = get_api()
     global tldata
     data = api.statuses.GET_home_timeline(count=count, page=page, mode='lite')
@@ -69,7 +70,7 @@ def timeline(count=10, page=0):
         print_status(i, status)
 
 
-def mentions(count=10, page=0):
+def mentions(count=8, page=0):
     api = get_api()
     global tldata
     data = api.statuses.GET_mentions(count=count, page=page, mode="lite")
@@ -79,7 +80,7 @@ def mentions(count=10, page=0):
         print_status(i, status)
 
 
-def usertimeline(user_id, count=10, page=0):
+def usertimeline(user_id, count=8, page=0):
     api = get_api()
     global tldata
     data = api.statuses.GET_user_timeline(id=user_id, count=count, page=page, mode='lite')
@@ -151,3 +152,9 @@ def repost(status, index):
     api.statuses.POST_update(status=u"{} 转:@{} {}".format(status, in_reply_to['user']['screen_name'], in_reply_to['text']),
                              repost_status_id=in_reply_to['id'])
 
+
+def showcontext(index):
+    global tldata
+    status_id = tldata[index]['in_reply_to_status_id'] or tldata[index]['repost_status_id']
+    if status_id:
+        showstatus(status_id)
