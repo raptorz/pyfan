@@ -6,6 +6,11 @@
 
     :copyright: 2012-16 by raptor.zh@gmail.com
 """
+import sys
+PY3=sys.version>"3"
+
+if PY3:
+    from io import IOBase
 
 from functools import partial
 import logging
@@ -85,7 +90,7 @@ class APIClient(object):
             else:
                 files = {}
                 for k, v in kwargs.items():
-                    if isinstance(v, file):
+                    if PY3 and isinstance(v, IOBase) or not PY3 and isinstance(v, file):
                         files[k]=v
                 for k in files.keys():
                     del kwargs[k]
