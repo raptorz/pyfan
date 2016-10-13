@@ -21,7 +21,7 @@ config_default = {
     "CLIENT_SECRET": "",
     "ACCESS_TOKEN": "",
     "ACCESS_SECRET": "",
-    "proxy": "",
+    "PROXY": "",
     "web_addr": "localhost",
     "web_port": "8880",
     "debug": False,

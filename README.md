@@ -8,7 +8,6 @@
 
     pip install -r requirements.txt
 
-
 ## 配置
 
 创建一个config.json的文件，加入申请的客户端ID：
@@ -17,6 +16,10 @@
         "CLIENT_KEY": "XXXX",
         "CLIENT_SECRET": "xxxx"
     }
+
+可选参数：
+
+"PROXY"：用于指定代理服务器，其值类似"http://localhost:8080"或"socks5://localhost:1080"
 
 ## 初始化
 

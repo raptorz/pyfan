@@ -45,7 +45,7 @@ def get_api():
     return Fanfou(config['CLIENT_KEY'], client_secret=config['CLIENT_SECRET'],
                   token=config['ACCESS_TOKEN'],
                   token_secret=config['ACCESS_SECRET'],
-                  proxies={"http": config['proxy'], "https": config['proxy']} if config['proxy'] else None)
+                  proxies={"http": config['PROXY'], "https": config['PROXY']} if config['PROXY'] else None)
 
 
 def print_status(i, status):
@@ -158,3 +158,17 @@ def showcontext(index):
     status_id = tldata[index]['in_reply_to_status_id'] or tldata[index]['repost_status_id']
     if status_id:
         showstatus(status_id)
+
+
+if __name__ == "__main__":
+    from httmock import all_requests, HTTMock
+
+    logging.basicConfig(level=logging.DEBUG)
+
+    @all_requests
+    def check_photo(url, request):
+        return {"status_code": 200, "content": "{}"}
+
+    with HTTMock(check_photo):
+        #post("test")
+        post("test", "/Users/raptor/Downloads/aaa.jpg")
