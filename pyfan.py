@@ -115,7 +115,8 @@ def post(status, photo="", in_reply_to_status_id=None, repost_status_id=None, in
         if not exists(photo):
             print("Photo file {} not found!".format(photo))
         else:
-            api.photos.POST_upload(status=status, photo=open(photo, "rb"), mode="lite")
+            with open(photo, "rb") as f:
+                api.photos.POST_upload(status=status, photo=f, mode="lite")
     else:
         api.statuses.POST_update(status=status,
                 in_reply_to_status_id=in_reply_to_status_id,
