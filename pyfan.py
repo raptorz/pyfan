@@ -24,6 +24,8 @@
 from os.path import exists
 from datetime import datetime
 import re
+import pytz
+import tzlocal
 
 from restclient.fanfou import Fanfou
 
@@ -51,7 +53,7 @@ def get_api():
 def print_status(i, status):
     row = {}
     row[u'index'] = i
-    row[u'created'] = datetime.strptime(status['created_at'], "%a %b %d %H:%M:%S +0000 %Y").strftime("%Y-%m-%d %H:%M:%S")
+    row[u'created'] = datetime.strptime(status['created_at'], "%a %b %d %H:%M:%S +0000 %Y").replace(tzinfo=pytz.utc).astimezone(tzlocal.get_localzone()).strftime("%Y-%m-%d %H:%M:%S")
     row[u'id'] = status['id']
     row[u'screen_name'] = status['user']['screen_name']
     row[u'user_id'] = status['user']['id']
