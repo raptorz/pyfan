@@ -11,6 +11,13 @@ PY3=sys.version>"3"
 
 if PY3:
     from io import IOBase
+    def isIOBase(obj):
+        return isinstance(obj, IOBase)
+else:
+    from cStringIO import InputType
+    from StringIO import StringIO
+    def isIOBase(obj):
+        return isinstance(obj, file) or isinstance(obj, StringIO) or isinstance(obj, InputType)
 
 from functools import partial
 import logging
@@ -90,7 +97,7 @@ class APIClient(object):
             else:
                 files = {}
                 for k, v in kwargs.items():
-                    if PY3 and isinstance(v, IOBase) or not PY3 and isinstance(v, file):
+                    if isIOBase(v):
                         files[k]=v
                 for k in files.keys():
                     del kwargs[k]
