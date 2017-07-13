@@ -2,6 +2,8 @@
 
 饭否客户端python版。
 
+* 更新说明：改用https，因为饭否的OAuth签名校验仍然使用http的URL计算，故用了一个HACK手段修改了requests_oauthlib
+
 ## 安装
 
 下载全部代码，运行：

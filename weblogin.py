@@ -50,9 +50,9 @@ def get_():
     callback_uri = "http://{host}:{port}/callback".format(host=config['web_addr'],
                                                           port=config['web_port'])
     api = Fanfou(config['CLIENT_KEY'], client_secret=config['CLIENT_SECRET'], callback_uri=callback_uri)
-    request_token = api.auth.fetch_request_token("http://fanfou.com/oauth/request_token")
+    request_token = api.auth.fetch_request_token("https://fanfou.com/oauth/request_token")
     response.set_cookie("request_token", json.dumps(request_token))
-    authorization_url = api.auth.authorization_url("http://fanfou.com/oauth/authorize", oauth_callback=callback_uri) 
+    authorization_url = api.auth.authorization_url("https://fanfou.com/oauth/authorize")
     redirect(authorization_url)
 
 
@@ -66,7 +66,7 @@ def get_callback():
                  token=request_token['oauth_token'],
                  token_secret=request_token['oauth_token_secret'],
                  verifier="1234")
-    access_token = api.auth.fetch_access_token("http://fanfou.com/oauth/access_token")
+    access_token = api.auth.fetch_access_token("https://fanfou.com/oauth/access_token")
     with open(get_fullname("config.json"), "r+") as f:
         access_config = json.loads(f.read())
         access_config['ACCESS_TOKEN'] = access_token['oauth_token']

@@ -6,6 +6,7 @@
     :copyright: 2013-16 by raptor.zh@gmail.com.
 """
 
+from requests.auth import AuthBase
 from requests_oauthlib import OAuth1Session
 from restclient import APIClient
 
@@ -31,14 +32,25 @@ direct_messages: GET_inbox, GET_sent, POST_new, POST_destroy, GET_conversation, 
 """
 
 
+class HttpsAuth(AuthBase):
+    def __init__(self, auth):
+        self.auth = auth
+
+    def __call__(self, r):
+        if r.url[:5] == "https":
+            r.url = r.url.replace("https", "http")
+        return self.auth(r)
+
+
 class Fanfou(APIClient):
     def __init__(self, client_key, client_secret=None, token=None, token_secret=None,
                  callback_uri=None, verifier=None, proxies=None):
         super(Fanfou, self).__init__(OAuth1Session(client_key, client_secret=client_secret,
                                                    resource_owner_key=token, resource_owner_secret=token_secret,
                                                    callback_uri=callback_uri, verifier=verifier),
-                                     "http://api.fanfou.com",
+                                     "https://api.fanfou.com",
                                      objlist=['search', 'blocks', 'users', 'account', 'saved_searches',
                                               'photos', 'trends', 'followers', 'favorites', 'friendships',
                                               'friends', 'statuses', 'direct_messages'],
                                      postfix="json", proxies=proxies)
+        self.auth.auth = HttpsAuth(self.auth.auth)
