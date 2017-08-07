@@ -37,9 +37,13 @@ class HttpsAuth(AuthBase):
         self.auth = auth
 
     def __call__(self, r):
-        if r.url[:5] == "https":
+        if r.url.startswith("https"):
             r.url = r.url.replace("https", "http")
-        return self.auth(r)
+            result = self.auth(r)
+            r.url = r.url.replace("http", "https")
+            return result
+        else:
+            return self.auth(r)
 
 
 class Fanfou(APIClient):
