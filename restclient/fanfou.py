@@ -10,6 +10,11 @@ from requests.auth import AuthBase
 from requests_oauthlib import OAuth1Session
 from restclient import APIClient
 
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 """
 available functions:
@@ -35,15 +40,16 @@ direct_messages: GET_inbox, GET_sent, POST_new, POST_destroy, GET_conversation, 
 class HttpsAuth(AuthBase):
     def __init__(self, auth):
         self.auth = auth
+        self.client = auth.client
 
     def __call__(self, r):
         if r.url.startswith("https"):
             r.url = r.url.replace("https", "http")
             result = self.auth(r)
             r.url = r.url.replace("http", "https")
-            return result
         else:
-            return self.auth(r)
+            result = self.auth(r)
+        return result
 
 
 class Fanfou(APIClient):
@@ -57,4 +63,5 @@ class Fanfou(APIClient):
                                               'photos', 'trends', 'followers', 'favorites', 'friendships',
                                               'friends', 'statuses', 'direct_messages'],
                                      postfix="json", proxies=proxies)
-        self.auth.auth = HttpsAuth(self.auth.auth)
+        self.auth._client = HttpsAuth(self.auth.auth)
+        self.auth.auth = self.auth._client
