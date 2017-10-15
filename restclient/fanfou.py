@@ -54,14 +54,43 @@ class HttpsAuth(AuthBase):
 
 class Fanfou(APIClient):
     def __init__(self, client_key, client_secret=None, token=None, token_secret=None,
-                 callback_uri=None, verifier=None, proxies=None):
+                 callback_uri=None, verifier=None, proxies=None, https=True):
         super(Fanfou, self).__init__(OAuth1Session(client_key, client_secret=client_secret,
                                                    resource_owner_key=token, resource_owner_secret=token_secret,
                                                    callback_uri=callback_uri, verifier=verifier),
-                                     "https://api.fanfou.com",
+                                     "https://api.fanfou.com" if https else "http://api.fanfou.com",
                                      objlist=['search', 'blocks', 'users', 'account', 'saved_searches',
                                               'photos', 'trends', 'followers', 'favorites', 'friendships',
                                               'friends', 'statuses', 'direct_messages'],
                                      postfix="json", proxies=proxies)
         self.auth._client = HttpsAuth(self.auth.auth)
         self.auth.auth = self.auth._client
+
+
+def get_authorization(client_key, client_secret, access_token, access_secret, callback_uri, https=True):
+    if access_token and access_secret:
+        api = Fanfou(client_key, client_secret=client_secret, token=access_token, token_secret=access_secret,
+                     https=https)
+        try:
+            data = api.account.GET_verify_credentials(mode='lite')
+        except:
+            data = None
+        if data:
+            return True, data
+    api = Fanfou(client_key, client_secret=client_secret, callback_uri=callback_uri, https=https)
+    try:
+        request_token = api.auth.fetch_request_token("http://fanfou.com/oauth/request_token")
+    except Exception as e:
+        return False, e
+    authorization_url = api.auth.authorization_url("https://fanfou.com/oauth/authorize")
+    return False, dict(token=request_token, url=authorization_url)
+
+
+def get_access_token(client_key, client_secret, request_token, https=True):
+    if not request_token:
+        return ValueError
+    api = Fanfou(client_key, client_secret=client_secret,
+                 token=request_token['oauth_token'], token_secret=request_token['oauth_token_secret'],
+                 verifier="1234", https=https)
+    access_token = api.auth.fetch_access_token("http://fanfou.com/oauth/access_token")
+    return access_token
