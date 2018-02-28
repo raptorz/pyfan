@@ -26,8 +26,8 @@ def index_template(content):
     return u"""<!DOCTYPE HTML>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>web login</title>
+    <meta charset="UTF-8">
+    <title>web login</title>
 </head>
 <body>
 <div>

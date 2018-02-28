@@ -90,3 +90,5 @@ ENV/
 
 #config file
 config.json
+
+.idea/
