@@ -8,18 +8,18 @@
 """
 import json
 
-from bottle import Bottle, run, request, response, redirect
-from restclient import Fanfou
-from restclient.fanfou import get_authorization, get_access_token
+from requests import HTTPError
+from flask import Flask, request, redirect, make_response
+from restclient.fanfou import Fanfou
 
-from config import config, get_fullname
+from config import reload_config, get_fullname
 
 import logging
 
 
 logger = logging.getLogger(__name__)
 
-app = Bottle()
+app = Flask(__name__)
 
 
 def index_template(content):
@@ -37,43 +37,56 @@ def index_template(content):
 </html>""".format(content)
 
 
-@app.get("/")
+@app.route("/")
 def get_():
-    auth, data = get_authorization(config['CLIENT_KEY'], config['CLIENT_SECRET'],
-                                   config.get('ACCESS_TOKEN'), config.get('ACCESS_SECRET'),
-                                   "http://{host}:{port}/callback".format(host=config['web_addr'],
-                                                                          port=config['web_port']),
-                                   config.get('FANFOU_HTTPS', True))
-    if auth:
-        return index_template(u"Login ok.<br/>User: {}.<br/><a href='/logout'>Logout</a>.".format(data['screen_name']))
-    else:
-        if not data or isinstance(data, Exception):
-            return str(data)
+    config = reload_config()
+    try:
+        if config.get("ACCESS_TOKEN") and config.get("ACCESS_SECRET"):
+            api = Fanfou(config['CLIENT_KEY'], config['CLIENT_SECRET'],
+                         config.get('ACCESS_TOKEN'), config.get('ACCESS_SECRET'),
+                         https=config.get('FANFOU_HTTPS', True))
+            data = api.account.GET_verify_credentials(mode='lite')
+            return index_template(u"Login ok.<br/>User: {}.<br/><a href='/logout'>Logout</a>.".format(data['screen_name']))
         else:
-            response.set_cookie("request_token", json.dumps(data['token']), path="/")
-            redirect(data['url'])
+            raise HTTPError
+    except HTTPError:
+        return index_template(u"<a href='/login'>Login</a>")
 
 
-@app.get("/callback")
+@app.route("/login")
+def get_login():
+    config = reload_config()
+    api = Fanfou(config['CLIENT_KEY'], config['CLIENT_SECRET'],
+                 redirect_uri="http://{host}:{port}/callback".format(host=config['web_addr'],
+                                                                     port=config['web_port']),
+                 https=config.get('FANFOU_HTTPS', True))
+    url = api.auth.get_request_url()
+    response = make_response(redirect(url))
+    response.set_cookie("request_token", api.auth.get_token_str(), path="/")
+    return response
+
+
+@app.route("/callback")
 def get_callback():
-    request_token = json.loads(request.get_cookie("request_token"))
-    response.set_cookie("request_token", "", path="/")
-    access_token = get_access_token(config['CLIENT_KEY'], config['CLIENT_SECRET'], request_token,
-                                    config.get('FANFOU_HTTPS', True))
-    if not access_token or isinstance(access_token, ValueError):
-        return index_template(u"Invalid request token")
+    config = reload_config()
+    request_token = json.loads(request.cookies.get("request_token"))
+    api = Fanfou(config['CLIENT_KEY'], config['CLIENT_SECRET'],
+                 request_token['access_token'], request_token['access_secret'],
+                 https=config.get('FANFOU_HTTPS', True))
+    api.auth.get_access_token()
     with open(get_fullname("config.json"), "r+") as f:
         access_config = json.loads(f.read())
-        access_config['ACCESS_TOKEN'] = access_token['oauth_token']
-        access_config['ACCESS_SECRET'] = access_token['oauth_token_secret']
+        access_config['ACCESS_TOKEN'] = api.auth.token['oauth_token']
+        access_config['ACCESS_SECRET'] = api.auth.token['oauth_token_secret']
         f.seek(0)
         f.truncate()
         f.write(json.dumps(access_config))
-        config.update(access_config)
-    redirect("/")
+    response = make_response(redirect("/"))
+    response.set_cookie("request_token", "", path="/")
+    return response
 
 
-@app.get("/logout")
+@app.route("/logout")
 def get_logout():
     with open(get_fullname("config.json"), "r+") as f:
         access_config = json.loads(f.read())
@@ -82,8 +95,7 @@ def get_logout():
         f.seek(0)
         f.truncate()
         f.write(json.dumps(access_config))
-        config.update(access_config)
-    redirect("/")
+    return redirect("/")
 
 
 def error_page(error):
@@ -100,5 +112,6 @@ application = app
 
 
 if __name__ == "__main__":
+    config = reload_config()
     logging.basicConfig(level=logging.DEBUG if config['debug'] else logging.WARNING)
-    run(application, host=config['web_addr'], port=config['web_port'], debug=config['debug'], reloader=config['debug'])
+    application.run(host=config['web_addr'], port=config['web_port'], debug=config['debug'], threaded=True)

@@ -4,7 +4,7 @@
     ~~~~~~~~~~~~~~~~
     RESTful api client.
 
-    :copyright: 2012-16 by raptor.zh@gmail.com
+    :copyright: 2012-18 by raptor.zh@gmail.com
 """
 import sys
 PY3=sys.version>"3"
@@ -21,6 +21,8 @@ else:
 
 from functools import partial
 import logging
+
+from requests_oauthlib import OAuth1Session, OAuth2Session
 
 
 logger = logging.getLogger(__name__)
@@ -90,6 +92,7 @@ class APIClient(object):
         return self._process(method, url, **kwargs)
 
     def _process(self, method, url, **kwargs):
+        logger.warning(str(kwargs))
         fn = getattr(self.auth, method.lower())
         if fn:
             if method in ['GET', 'DELETE']:
@@ -98,7 +101,7 @@ class APIClient(object):
                 files = {}
                 for k, v in kwargs.items():
                     if isIOBase(v):
-                        files[k]=v
+                        files[k] = v
                 for k in files.keys():
                     del kwargs[k]
                 r = fn(url, data=kwargs, files=files if files else None, verify=self.verify, proxies=self.proxies)
@@ -122,3 +125,53 @@ class APIClient(object):
 
     def delete(self, url, *args, **kwargs):
         return self._request("DELETE", url, *args, **kwargs)
+
+
+class AuthOAuth1(OAuth1Session):
+    def __init__(self, client_id, client_secret, redirect_uri,
+                 request_token_uri, authorization_uri, access_token_uri,
+                 access_token=None, access_secret=None,
+                 https=True, **kwargs):
+        super(AuthOAuth1, self).__init__(client_key=client_id, client_secret=client_secret,
+                                         resource_owner_key=access_token, resource_owner_secret=access_secret,
+                                         callback_uri=redirect_uri, **kwargs)
+        self.callback_uri = redirect_uri
+        self.request_token_uri = request_token_uri
+        self.authorization_uri = authorization_uri
+        self.access_token_uri = access_token_uri
+        self.https = https
+        self.token = {}
+
+    def get_request_url(self, **kwargs):
+        if not self.token:
+            self.token = self.fetch_request_token(self.request_token_uri)
+        else:
+            kwargs['request_token'] = self.token
+        authorization_url = self.authorization_url(self.authorization_uri, **kwargs)
+        return authorization_url
+
+    def get_access_token(self, verifier="", **kwargs):
+        self.token = self.fetch_access_token(self.access_token_uri, verifier, **kwargs)
+        return self.token
+
+
+class AuthOAuth2(OAuth2Session):
+    def __init__(self, client_id, client_secret, redirect_uri,
+                 authorization_uri, access_token_uri,
+                 access_token=None, **kwargs):
+        super(AuthOAuth2, self).__init__(client_id=client_id, token=access_token,
+                                         redirect_uri=redirect_uri, **kwargs)
+        self.client_secret = client_secret
+        self.authorization_uri = authorization_uri
+        self.access_token_uri = access_token_uri
+
+    def get_request_url(self, **kwargs):
+        request_url, state = self.authorization_url(self.authorization_uri, **kwargs)
+        return request_url
+
+    def get_access_token(self, response_url, **kwargs):
+        token = self.fetch_token(self.access_token_uri,
+                                 client_secret=self.client_secret,
+                                 authorization_response=response_url,
+                                 **kwargs)
+        return token

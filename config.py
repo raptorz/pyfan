@@ -22,9 +22,10 @@ config_default = {
     "ACCESS_TOKEN": "",
     "ACCESS_SECRET": "",
     "PROXY": "",
+    "FANFOU_HTTPS": True,
     "web_addr": "localhost",
-    "web_port": "8880",
-    "debug": False,
+    "web_port": 8880,
+    "debug": True,
 }
 
 
@@ -41,10 +42,12 @@ def unidecode(s, coding="utf-8"):
     return unicode(s, coding) if s and (not PY3 or isinstance(s, str)) else s
 
 
-try:
-    with open(get_fullname("config.json"), "r") as f:
-        config = json.loads(f.read())
-    config_default.update(config)
-    config = config_default
-except IOError:
-    config = config_default
+def reload_config():
+    res = config_default.copy()
+    try:
+        with open(get_fullname("config.json"), "r") as f:
+            config = json.loads(f.read())
+        res.update(config)
+    except IOError:
+        pass
+    return res

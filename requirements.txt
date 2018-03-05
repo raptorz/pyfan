@@ -1,5 +1,5 @@
-bottle
+flask
 requests_oauthlib
-pysocks
-pytz
-tzlocal
+# pysocks
+# pytz
+# tzlocal
