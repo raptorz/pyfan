@@ -5,7 +5,6 @@
 
     :copyright: 2013-18 by raptor.zh@gmail.com.
 """
-import json
 import logging
 
 from requests.auth import AuthBase
@@ -42,11 +41,6 @@ class AuthFanfou(AuthOAuth1):
                                          access_token=access_token, access_secret=access_secret,
                                          https=https, **kwargs)
 
-    def get_token_str(self):
-        res = {"access_token": self.token['oauth_token'],
-               "access_secret": self.token['oauth_token_secret']}
-        return json.dumps(res)
-
     def get_request_url(self):
         return super(AuthFanfou, self).get_request_url(oauth_callback=self.callback_uri)
 
@@ -76,13 +70,13 @@ class Fanfou(APIClient):
     direct_messages: GET_inbox, GET_sent, POST_new, POST_destroy, GET_conversation, GET_conversation_list
     """
     def __init__(self, client_key, client_secret=None, access_token=None, access_secret=None,
-                 redirect_uri=None, proxies=None, https=True, **kwargs):
+                 redirect_uri=None, verify=True, proxies=None, https=True, **kwargs):
         super(Fanfou, self).__init__(AuthFanfou(client_key, client_secret=client_secret, redirect_uri=redirect_uri,
                                                 access_token=access_token, access_secret=access_secret, **kwargs),
                                      "https://api.fanfou.com" if https else "http://api.fanfou.com",
                                      objlist=['search', 'blocks', 'users', 'account', 'saved_searches',
                                               'photos', 'trends', 'followers', 'favorites', 'friendships',
                                               'friends', 'statuses', 'direct_messages'],
-                                     postfix="json", proxies=proxies)
+                                     postfix="json", verify=verify, proxies=proxies)
         self.auth._client = HttpsAuth(self.auth.auth)
         self.auth.auth = self.auth._client

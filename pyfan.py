@@ -26,12 +26,11 @@ from datetime import datetime
 import re
 import pytz
 import tzlocal
+import logging
 
 from restclient.fanfou import Fanfou
 
-from config import config
-
-import logging
+from config import reload_config
 
 
 logger = logging.getLogger(__name__)
@@ -44,9 +43,10 @@ pat_reply = re.compile(u"@([^\s]+)\s")
 
 
 def get_api():
+    config = reload_config()
     return Fanfou(config['CLIENT_KEY'], client_secret=config['CLIENT_SECRET'],
-                  token=config['ACCESS_TOKEN'],
-                  token_secret=config['ACCESS_SECRET'],
+                  access_token=config['ACCESS_TOKEN'],
+                  access_secret=config['ACCESS_SECRET'],
                   proxies={"http": config['PROXY'], "https": config['PROXY']} if config['PROXY'] else None)
 
 

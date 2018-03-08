@@ -1,5 +1,5 @@
 flask
+requests[socks]
 requests_oauthlib
-# pysocks
-# pytz
-# tzlocal
+pytz
+tzlocal

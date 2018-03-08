@@ -7,19 +7,23 @@
     :copyright: 2012-18 by raptor.zh@gmail.com
 """
 import sys
-PY3=sys.version>"3"
+
+PY3 = sys.version>"3"
 
 if PY3:
     from io import IOBase
+
     def isIOBase(obj):
         return isinstance(obj, IOBase)
 else:
     from cStringIO import InputType
     from StringIO import StringIO
+
     def isIOBase(obj):
         return isinstance(obj, file) or isinstance(obj, StringIO) or isinstance(obj, InputType)
 
 from functools import partial
+import json
 import logging
 
 from requests_oauthlib import OAuth1Session, OAuth2Session
@@ -35,7 +39,7 @@ class APIObject(object):
 
     def __getattr__(self, name):
         funcs = name.split("_")
-        fn = self.client._get_func(funcs[0], "_".join(
+        fn = self.client.get_func(funcs[0], "_".join(
             [f if f != "ID" else "%s" for f in funcs[1:]]), self.objname)
         if fn:
             setattr(self, name, fn)
@@ -44,22 +48,31 @@ class APIObject(object):
             raise AttributeError('Invalid function name!')
 
 
-# auth is requests_oauthlib.OAuth1Session or OAuth2Session
 class APIClient(object):
     def __init__(self, auth, url, objlist=None, postcall=None, postfix="", verify=True, proxies=None):
+        """
+        API client base class
+        :param auth: AuthOAuth1 or AuthOAuth2 object
+        :param url: API base url
+        :param objlist: available API objects
+        :param postcall: method will be called after API calling
+        :param postfix: API method postfix, eg. .json or .xml
+        :param verify: https verify
+        :param proxies: proxies, like: {"http": "http://10.10.1.10:3128", "https": "http://10.10.1.10:1080"}
+        """
         self.auth = auth
         self.url = url
         self.objlist = objlist
         self.postcall = postcall if postcall else lambda r: r.json()
         self.postfix = postfix
-        self.verify = verify
-        self.proxies = proxies
+        self.auth.verify = verify
+        self.auth.proxies = proxies
 
     def __getattr__(self, name):
         s = name.replace("_", "/")
-        s = s.replace("//", "_")  # "__" will be relaced by "_" and not for split
+        s = s.replace("//", "_")  # "__" will be replaced by "_" and not for split
         funcs = s.split("/")
-        fn = self._get_func(funcs[0], "/".join([f if f != "ID" else "%s" for f in funcs[1:]]))
+        fn = self.get_func(funcs[0], "/".join([f if f != "ID" else "%s" for f in funcs[1:]]))
         if fn:
             setattr(self, name, fn)
             return fn
@@ -68,9 +81,9 @@ class APIClient(object):
             setattr(self, name, obj)
             return obj
         else:
-            raise AttributeError("Invalide object name!")
+            raise AttributeError("Invalid object name!")
 
-    def _get_func(self, method, func, objname=None):
+    def get_func(self, method, func, objname=None):
         fn = None
         if method in ['GET', 'POST', 'PUT', 'DELETE']:
             if objname:
@@ -89,14 +102,18 @@ class APIClient(object):
             else:
                 func = func % args  # It will raise TypeError if args is not match
         url = "/".join([self.url, func])
+        try:
+            kwargs.update(self.extra_params)
+        except AttributeError:
+            pass
         return self._process(method, url, **kwargs)
 
     def _process(self, method, url, **kwargs):
-        logger.warning(str(kwargs))
+        logger.debug(str(kwargs))
         fn = getattr(self.auth, method.lower())
         if fn:
             if method in ['GET', 'DELETE']:
-                r = fn(url, params=kwargs, verify=self.verify, proxies=self.proxies)
+                r = fn(url, params=kwargs, verify=self.auth.verify, proxies=self.auth.proxies)
             else:
                 files = {}
                 for k, v in kwargs.items():
@@ -104,7 +121,8 @@ class APIClient(object):
                         files[k] = v
                 for k in files.keys():
                     del kwargs[k]
-                r = fn(url, data=kwargs, files=files if files else None, verify=self.verify, proxies=self.proxies)
+                r = fn(url, data=kwargs, files=files if files else None,
+                       verify=self.auth.verify, proxies=self.auth.proxies)
         else:
             raise AttributeError("Invalid http method name!")
         r.raise_for_status()
@@ -140,7 +158,13 @@ class AuthOAuth1(OAuth1Session):
         self.authorization_uri = authorization_uri
         self.access_token_uri = access_token_uri
         self.https = https
-        self.token = {}
+        self.token = {"access_token": access_token, "access_secret": access_secret
+                      } if access_token and access_secret else {}
+
+    def get_token_str(self):
+        res = {"access_token": self.token['oauth_token'],
+               "access_secret": self.token['oauth_token_secret']}
+        return json.dumps(res)
 
     def get_request_url(self, **kwargs):
         if not self.token:
@@ -164,14 +188,15 @@ class AuthOAuth2(OAuth2Session):
         self.client_secret = client_secret
         self.authorization_uri = authorization_uri
         self.access_token_uri = access_token_uri
+        self.token = access_token
 
     def get_request_url(self, **kwargs):
         request_url, state = self.authorization_url(self.authorization_uri, **kwargs)
         return request_url
 
     def get_access_token(self, response_url, **kwargs):
-        token = self.fetch_token(self.access_token_uri,
-                                 client_secret=self.client_secret,
-                                 authorization_response=response_url,
-                                 **kwargs)
-        return token
+        self.token = self.fetch_token(self.access_token_uri,
+                                      client_secret=self.client_secret,
+                                      authorization_response=response_url,
+                                      **kwargs)
+        return self.token
