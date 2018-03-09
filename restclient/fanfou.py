@@ -9,7 +9,7 @@ import logging
 
 from requests.auth import AuthBase
 
-from restclient import APIClient, AuthOAuth1
+from .restclient import APIClient, AuthOAuth1
 
 
 logger = logging.getLogger(__name__)

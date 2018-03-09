@@ -185,10 +185,12 @@ class AuthOAuth2(OAuth2Session):
                  access_token=None, **kwargs):
         super(AuthOAuth2, self).__init__(client_id=client_id, token=access_token,
                                          redirect_uri=redirect_uri, **kwargs)
+        self.callback_uri = redirect_uri
         self.client_secret = client_secret
         self.authorization_uri = authorization_uri
         self.access_token_uri = access_token_uri
-        self.token = access_token
+        if access_token:
+            self.token = access_token
 
     def get_request_url(self, **kwargs):
         request_url, state = self.authorization_url(self.authorization_uri, **kwargs)
