@@ -158,8 +158,8 @@ class AuthOAuth1(OAuth1Session):
         self.authorization_uri = authorization_uri
         self.access_token_uri = access_token_uri
         self.https = https
-        self.token = {"access_token": access_token, "access_secret": access_secret
-                      } if access_token and access_secret else {}
+        if access_token and access_secret:  # request_token
+            self.token = {"oauth_token": access_token, "oauth_token_secret": access_secret}
 
     def get_token_str(self):
         res = {"access_token": self.token['oauth_token'],

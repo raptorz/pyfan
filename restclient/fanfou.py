@@ -78,5 +78,6 @@ class Fanfou(APIClient):
                                               'photos', 'trends', 'followers', 'favorites', 'friendships',
                                               'friends', 'statuses', 'direct_messages'],
                                      postfix="json", verify=verify, proxies=proxies)
-        self.auth._client = HttpsAuth(self.auth.auth)
-        self.auth.auth = self.auth._client
+        if https:
+            self.auth._client = HttpsAuth(self.auth.auth)
+            self.auth.auth = self.auth._client
