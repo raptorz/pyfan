@@ -47,7 +47,8 @@ def get_api():
     return Fanfou(config['CLIENT_KEY'], client_secret=config['CLIENT_SECRET'],
                   access_token=config['ACCESS_TOKEN'],
                   access_secret=config['ACCESS_SECRET'],
-                  proxies={"http": config['PROXY'], "https": config['PROXY']} if config['PROXY'] else None)
+                  proxies={"http": config['PROXY'], "https": config['PROXY']} if config['PROXY'] else None,
+                  https=config['FANFOU_HTTPS'])
 
 
 def print_status(i, status):
